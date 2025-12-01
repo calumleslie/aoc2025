@@ -75,6 +75,7 @@ impl TurnResult {
         TurnResult { dial, clicks }
     }
 
+    #[cfg(test)] // Not test-specific but unused elsewhere
     fn of(dial_direction: i64, clicks: i64) -> Self {
         Self::new(Dial::of(dial_direction), clicks)
     }
