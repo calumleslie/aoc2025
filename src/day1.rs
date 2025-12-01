@@ -16,6 +16,12 @@ struct Dial(i64);
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 struct Turn(i64);
 
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+struct TurnResult {
+    dial: Dial,
+    clicks: i64,
+}
+
 impl Dial {
     fn new() -> Dial {
         Dial(50)
@@ -30,19 +36,24 @@ impl Dial {
         Dial(direction)
     }
 
-    fn apply(&self, turn: Turn) -> Dial {
-        let amount_effective = turn.0.abs() % 100;
+    fn apply(&self, turn: Turn) -> TurnResult {
+        let result = (self.0 + turn.0).rem_euclid(100);
 
-        let effective_turn = match turn.0.signum() {
-            0 => 0,
-            -1 => 100 - amount_effective,
-            1 => amount_effective,
-            _ => unreachable!(),
-        };
+        // Complete turns are always a click
+        let mut clicks = turn.0.abs() / 100;
 
-        let result = (self.0 + effective_turn) % 100;
+        if self.0 > 0 {
+            // If we travel _through_ zero (not from it!) we may incur another click
+            let deflection = (turn.0.abs() % 100) * turn.0.signum();
+            let destination = self.0 + deflection;
 
-        Dial::of(result)
+            // If it ends up on zero or beyond it, we get an additional click
+            if destination <= 0 || destination >= 100 {
+                clicks += 1;
+            }
+        }
+
+       TurnResult::new(Dial::of(result), clicks)
     }
 }
 
@@ -59,12 +70,22 @@ impl Turn {
     }
 }
 
+impl TurnResult {
+    fn new(dial: Dial, clicks: i64) -> Self {
+        TurnResult { dial, clicks }
+    }
+
+    fn of(dial_direction: i64, clicks: i64) -> Self {
+        Self::new(Dial::of(dial_direction), clicks)
+    }
+}
+
 fn count_zeroes(initial: Dial, turns: Vec<Turn>) -> i64 {
     let mut dial = initial;
     let mut count: i64 = 0;
 
     for turn in turns {
-        dial = dial.apply(turn);
+        dial = dial.apply(turn).dial;
 
         if dial.direction() == 0 {
             count += 1
@@ -74,10 +95,30 @@ fn count_zeroes(initial: Dial, turns: Vec<Turn>) -> i64 {
     count
 }
 
+fn count_clicks(initial: Dial, turns: Vec<Turn>) -> i64 {
+    let mut dial = initial;
+    let mut clicks: i64 = 0;
+
+    for turn in turns {
+        let turn_result = dial.apply(turn);
+
+        dial = turn_result.dial;
+        clicks += turn_result.clicks;
+    }
+
+    clicks
+}
+
 pub fn part1() -> Result<i64, Box<dyn Error>> {
     let turns = read_turns("inputs/day1.part1.txt")?;
 
     Ok(count_zeroes(Dial::new(), turns))
+}
+
+pub fn part2() -> Result<i64, Box<dyn Error>> {
+    let turns = read_turns("inputs/day1.part1.txt")?;
+
+    Ok(count_clicks(Dial::new(), turns))
 }
 
 fn read_turns<P>(filename: P) -> io::Result<Vec<Turn>> where P: AsRef<Path> {
@@ -109,11 +150,13 @@ mod tests {
 
     #[test]
     fn dial_simple_examples() {
-        assert_eq!(Dial::of(50).apply(Turn(50)), Dial::of(0));
-        assert_eq!(Dial::of(50).apply(Turn(0)), Dial::of(50));
-        assert_eq!(Dial::of(50).apply(Turn(-100)), Dial::of(50));
-        assert_eq!(Dial::of(50).apply(Turn(-50)), Dial::of(0));
-        assert_eq!(Dial::of(50).apply(Turn(-100_000_000)), Dial::of(50));
+        assert_eq!(Dial::of(50).apply(Turn(50)), TurnResult::of(0, 1));
+        assert_eq!(Dial::of(50).apply(Turn(0)), TurnResult::of(50, 0));
+        assert_eq!(Dial::of(50).apply(Turn(-100)), TurnResult::of(50, 1));
+        assert_eq!(Dial::of(50).apply(Turn(-50)), TurnResult::of(0, 0));
+        assert_eq!(Dial::of(50).apply(Turn(-51)), TurnResult::of(99, 1));
+        assert_eq!(Dial::of(50).apply(Turn(-100_000_000)), TurnResult::of(50, 1_000_000));
+        assert_eq!(Dial::of(50).apply(Turn(1000)), TurnResult::of(50, 10));
     }
 
     #[test]
@@ -139,7 +182,7 @@ mod tests {
         let turns: Vec<Turn> = EXAMPLES.lines().map(|l| Turn::parse(l.trim())).collect();
 
         for turn in turns {
-            dial = dial.apply(turn);
+            dial = dial.apply(turn).dial;
         }
 
         assert_eq!(dial, Dial::of(32));
@@ -151,5 +194,13 @@ mod tests {
         let turns: Vec<Turn> = EXAMPLES.lines().map(|l| Turn::parse(l.trim())).collect();
 
         assert_eq!(count_zeroes(dial, turns), 3);
+    }
+
+    #[test]
+    fn count_clicks_using_examples() {
+        let dial = Dial::new();
+        let turns: Vec<Turn> = EXAMPLES.lines().map(|l| Turn::parse(l.trim())).collect();
+
+        assert_eq!(count_clicks(dial, turns), 6);
     }
 }
