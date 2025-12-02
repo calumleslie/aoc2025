@@ -154,7 +154,7 @@ mod tests {
         assert_eq!(Dial::of(50).apply(Turn(50)), TurnResult::of(0, 1));
         assert_eq!(Dial::of(50).apply(Turn(0)), TurnResult::of(50, 0));
         assert_eq!(Dial::of(50).apply(Turn(-100)), TurnResult::of(50, 1));
-        assert_eq!(Dial::of(50).apply(Turn(-50)), TurnResult::of(0, 0));
+        assert_eq!(Dial::of(50).apply(Turn(-50)), TurnResult::of(0, 1));
         assert_eq!(Dial::of(50).apply(Turn(-51)), TurnResult::of(99, 1));
         assert_eq!(Dial::of(50).apply(Turn(-100_000_000)), TurnResult::of(50, 1_000_000));
         assert_eq!(Dial::of(50).apply(Turn(1000)), TurnResult::of(50, 10));
