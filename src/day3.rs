@@ -4,10 +4,18 @@ use std::io;
 use std::io::BufRead;
 use std::path::Path;
 
-pub fn part1() -> Result<u32, Box<dyn Error>> {
+pub fn part1() -> Result<u64, Box<dyn Error>> {
     let banks = read_banks("inputs/day3.part1.txt")?;
 
-    let result = banks.iter().map(Bank::max_joltage).sum();
+    let result: u64 = banks.iter().map(|b| b.max_joltage(2)).sum();
+
+    Ok(result)
+}
+
+pub fn part2() -> Result<u64, Box<dyn Error>> {
+    let banks = read_banks("inputs/day3.part1.txt")?;
+
+    let result: u64 = banks.iter().map(|b| b.max_joltage(12)).sum();
 
     Ok(result)
 }
@@ -33,14 +41,24 @@ impl Bank {
         Bank::new(batteries)
     }
 
-    fn max_joltage(&self) -> u32 {
-        // First digit is the highest number, second digit is the highest number occurring after
-        // that one. We cannot use the last digit as first
-        let first = self.0[..self.0.len() - 1].iter().max().unwrap();
-        let first_index = self.0.iter().position(|n| n == first).unwrap();
-        let second = self.0[(first_index + 1)..].iter().max().unwrap();
+    fn max_joltage(&self, length: usize) -> u64 {
+        max_joltage(&self.0, length)
+    }
+}
 
-        (first * 10) + second
+fn max_joltage(window: &[u32], length: usize) -> u64 {
+    assert!(length > 0);
+
+    // We need to have at least length digits left after we select one
+    let top = *window[..window.len() - (length - 1)].iter().max().unwrap();
+    let top_index = window.iter().position(|n| *n == top).unwrap();
+
+    if length == 1 {
+        top as u64
+    } else {
+        let suffix = max_joltage(&window[(top_index+1)..], length-1);
+
+        (top as u64) * 10u64.pow((length as u32) - 1) + suffix
     }
 }
 
@@ -54,10 +72,20 @@ mod tests {
     pub fn max_joltage_examples() {
         let max_joltages = EXAMPLES
             .map(Bank::parse)
-            .map(|b| b.max_joltage())
+            .map(|b| b.max_joltage(2))
             .to_vec();
 
         assert_eq!(max_joltages, vec![98, 89, 78, 92]);
+    }
+
+    #[test]
+    pub fn max_joltage_12_examples() {
+        let max_joltages = EXAMPLES
+            .map(Bank::parse)
+            .map(|b| b.max_joltage(12))
+            .to_vec();
+
+        assert_eq!(max_joltages, vec![987654321111, 811111111119, 434234234278, 888911112111]);
     }
 
     #[test]
