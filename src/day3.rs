@@ -20,10 +20,14 @@ pub fn part2() -> Result<u64, Box<dyn Error>> {
     Ok(result)
 }
 
-fn read_banks<P>(filename: P) -> io::Result<Vec<Bank>> where P: AsRef<Path> {
+fn read_banks<P>(filename: P) -> io::Result<Vec<Bank>>
+where
+    P: AsRef<Path>,
+{
     let file = File::open(filename)?;
 
-    io::BufReader::new(file).lines()
+    io::BufReader::new(file)
+        .lines()
         .map(|l| l.map(|t| Bank::parse(t.as_str())))
         .collect()
 }
@@ -37,7 +41,10 @@ impl Bank {
     }
 
     fn parse(str: &str) -> Bank {
-        let batteries = str.chars().map(|c| c.to_digit(10).unwrap()).collect::<Vec<_>>();
+        let batteries = str
+            .chars()
+            .map(|c| c.to_digit(10).unwrap())
+            .collect::<Vec<_>>();
         Bank::new(batteries)
     }
 
@@ -56,7 +63,7 @@ fn max_joltage(window: &[u32], length: usize) -> u64 {
     if length == 1 {
         top as u64
     } else {
-        let suffix = max_joltage(&window[(top_index+1)..], length-1);
+        let suffix = max_joltage(&window[(top_index + 1)..], length - 1);
 
         (top as u64) * 10u64.pow((length as u32) - 1) + suffix
     }
@@ -66,14 +73,16 @@ fn max_joltage(window: &[u32], length: usize) -> u64 {
 mod tests {
     use crate::day3::*;
 
-    static EXAMPLES: [&str; 4] = ["987654321111111", "811111111111119", "234234234234278", "818181911112111"];
+    static EXAMPLES: [&str; 4] = [
+        "987654321111111",
+        "811111111111119",
+        "234234234234278",
+        "818181911112111",
+    ];
 
     #[test]
     pub fn max_joltage_examples() {
-        let max_joltages = EXAMPLES
-            .map(Bank::parse)
-            .map(|b| b.max_joltage(2))
-            .to_vec();
+        let max_joltages = EXAMPLES.map(Bank::parse).map(|b| b.max_joltage(2)).to_vec();
 
         assert_eq!(max_joltages, vec![98, 89, 78, 92]);
     }
@@ -85,13 +94,17 @@ mod tests {
             .map(|b| b.max_joltage(12))
             .to_vec();
 
-        assert_eq!(max_joltages, vec![987654321111, 811111111119, 434234234278, 888911112111]);
+        assert_eq!(
+            max_joltages,
+            vec![987654321111, 811111111119, 434234234278, 888911112111]
+        );
     }
 
     #[test]
     pub fn parse_example() {
         assert_eq!(
             Bank::parse("987654321111111"),
-            Bank::new(vec![9, 8, 7, 6, 5, 4, 3, 2, 1, 1, 1, 1, 1, 1, 1]));
+            Bank::new(vec![9, 8, 7, 6, 5, 4, 3, 2, 1, 1, 1, 1, 1, 1, 1])
+        );
     }
 }

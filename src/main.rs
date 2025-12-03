@@ -13,7 +13,9 @@ struct CliError {
 
 impl CliError {
     fn new(msg: &str) -> CliError {
-        CliError { details: msg.to_string() }
+        CliError {
+            details: msg.to_string(),
+        }
     }
 
     fn from_string(msg: String) -> CliError {
@@ -41,17 +43,17 @@ fn main() -> Result<(), Box<dyn Error>> {
             println!("Day 1 part 1: {}", day1::part1()?);
             println!("Day 1 part 2: {}", day1::part2()?);
             Ok(())
-        },
+        }
         "day2" => {
             println!("Day 2 part 1: {}", day2::part1()?);
             println!("Day 2 part 2: {}", day2::part2()?);
             Ok(())
-        },
+        }
         "day3" => {
             println!("Day 3 part 1: {}", day3::part1()?);
             println!("Day 3 part 2: {}", day3::part2()?);
             Ok(())
         }
-        cmd => Err(CliError::from_string(format!("Unknown command: {}", cmd)).into())
+        cmd => Err(CliError::from_string(format!("Unknown command: {}", cmd)).into()),
     }
 }

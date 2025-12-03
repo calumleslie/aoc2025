@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use std::cmp::max;
 use std::error::Error;
 use std::fs::File;
@@ -5,7 +6,6 @@ use std::io::Read;
 use std::num::ParseIntError;
 use std::ops::RangeInclusive;
 use std::str::FromStr;
-use itertools::Itertools;
 
 type IdRange = RangeInclusive<u64>;
 
@@ -14,7 +14,8 @@ pub fn part1() -> Result<u64, Box<dyn Error>> {
     File::open("inputs/day2.part1.txt")?.read_to_string(&mut input)?;
     let ranges = parse_ranges(input.as_str())?;
 
-    Ok(ranges.iter()
+    Ok(ranges
+        .iter()
         .map(|r| find_all_invalid_ids_with_exact_repetition(r, 2).sum::<u64>())
         .sum())
 }
@@ -30,10 +31,13 @@ pub fn part2() -> Result<u64, Box<dyn Error>> {
         assert_eq!(
             find_all_invalid_ids(range).sorted().collect::<Vec<_>>(),
             find_all_invalid_ids_brute_force(range).collect::<Vec<_>>(),
-            "Range: {:?}", range)
+            "Range: {:?}",
+            range
+        )
     });
 
-    Ok(ranges.iter()
+    Ok(ranges
+        .iter()
         .map(|r| find_all_invalid_ids(r).sum::<u64>())
         .sum())
 }
@@ -60,7 +64,10 @@ fn find_all_invalid_ids(range: &IdRange) -> impl Iterator<Item = u64> {
         .unique()
 }
 
-fn find_all_invalid_ids_with_exact_repetition(range: &IdRange, repetitions: u32) -> impl Iterator<Item = u64> {
+fn find_all_invalid_ids_with_exact_repetition(
+    range: &IdRange,
+    repetitions: u32,
+) -> impl Iterator<Item = u64> {
     // Having to do the max here makes me worried that I screwed this logic up
     let first_length = max(1, (range.start().ilog10() + 1) / repetitions);
 
@@ -70,7 +77,10 @@ fn find_all_invalid_ids_with_exact_repetition(range: &IdRange, repetitions: u32)
         .filter(|id| range.contains(id))
 }
 
-fn invalid_ids_with_prefix_and_repetitions(prefix_length: u32, repetitions: u32) -> impl Iterator<Item=u64> {
+fn invalid_ids_with_prefix_and_repetitions(
+    prefix_length: u32,
+    repetitions: u32,
+) -> impl Iterator<Item = u64> {
     let first_prefix = 10u64.pow(prefix_length - 1);
 
     // In the old version we went through some pains to calculate the right "first" prefix. We could
@@ -81,7 +91,10 @@ fn invalid_ids_with_prefix_and_repetitions(prefix_length: u32, repetitions: u32)
         .map(move |prefix| invalid_id(prefix, repetitions))
 }
 
-fn invalid_ids_with_prefix_length(range: &IdRange, prefix_length: u32) -> impl Iterator<Item=u64> {
+fn invalid_ids_with_prefix_length(
+    range: &IdRange,
+    prefix_length: u32,
+) -> impl Iterator<Item = u64> {
     // Repeated ranges of characters can only happen when the number of digits divide by len, and
     // there's only one for a given "prefix". We will generate them directly.
     let digits = range.start().ilog10() + 1;
@@ -111,7 +124,10 @@ fn parse_ranges(str: &str) -> Result<Vec<IdRange>, Box<dyn Error>> {
 }
 
 fn parse_range(str: &str) -> Result<IdRange, Box<dyn Error>> {
-    let bits: Vec<u64> = str.split("-").map(u64::from_str).collect::<Result<Vec<_>, ParseIntError>>()?;
+    let bits: Vec<u64> = str
+        .split("-")
+        .map(u64::from_str)
+        .collect::<Result<Vec<_>, ParseIntError>>()?;
 
     if bits.len() != 2 {
         return Err("encountered range with more than two components".into());
@@ -140,7 +156,8 @@ mod tests {
     fn parse_ranges_simple() {
         assert_eq!(
             parse_ranges("11-22,95-115,998-1012,1188511880-1188511890").unwrap(),
-            vec![11..=22, 95..=115, 998..=1012, 1188511880..=1188511890]);
+            vec![11..=22, 95..=115, 998..=1012, 1188511880..=1188511890]
+        );
     }
 
     #[test]
@@ -156,33 +173,35 @@ mod tests {
             invalid_ids_with_prefix_length(range, prefix_length).collect()
         }
 
-        assert_eq!(
-            collect_ids(&(11..=44), 1),
-            vec![11, 22, 33, 44]);
+        assert_eq!(collect_ids(&(11..=44), 1), vec![11, 22, 33, 44]);
 
         assert_eq!(
             collect_ids(&(88..=1111), 1),
-           vec![88, 99, 111, 222, 333, 444, 555, 666, 777, 888, 999, 1111]);
+            vec![88, 99, 111, 222, 333, 444, 555, 666, 777, 888, 999, 1111]
+        );
 
         assert_eq!(
             collect_ids(&(1000..=2000), 2),
-            vec![1010, 1111, 1212, 1313, 1414, 1515, 1616, 1717, 1818, 1919]);
+            vec![1010, 1111, 1212, 1313, 1414, 1515, 1616, 1717, 1818, 1919]
+        );
 
         assert_eq!(
             collect_ids(&(1230_1230..=1234_1234), 4),
-            vec![1230_1230, 1231_1231, 1232_1232, 1233_1233, 1234_1234]);
+            vec![1230_1230, 1231_1231, 1232_1232, 1233_1233, 1234_1234]
+        );
     }
-
 
     #[test]
     fn exactly_2_repetitions_examples() {
         let examples = parse_ranges(EXAMPLES).unwrap();
 
-        let invalid_ids: Vec<Vec<u64>> = examples.iter()
+        let invalid_ids: Vec<Vec<u64>> = examples
+            .iter()
             .map(|e| find_all_invalid_ids_with_exact_repetition(e, 2).collect())
             .collect();
 
-        assert_eq!(invalid_ids,
+        assert_eq!(
+            invalid_ids,
             vec![
                 vec![11, 22],
                 vec![99],
@@ -195,53 +214,66 @@ mod tests {
                 vec![],
                 vec![],
                 vec![],
-            ]);
+            ]
+        );
 
-
-        assert_eq!(examples.iter()
-                       .map(|r| find_all_invalid_ids_with_exact_repetition(r, 2).sum::<u64>())
-                       .sum::<u64>(), 1227775554);
+        assert_eq!(
+            examples
+                .iter()
+                .map(|r| find_all_invalid_ids_with_exact_repetition(r, 2).sum::<u64>())
+                .sum::<u64>(),
+            1227775554
+        );
     }
 
     #[test]
     fn all_repetitions_duplicates_returned_once() {
         assert_eq!(
             find_all_invalid_ids(&(1111..=1111)).collect::<Vec<u64>>(),
-            vec![1111]);
+            vec![1111]
+        );
     }
 
     #[test]
     fn all_repetitions_single_digits() {
         assert_eq!(
             find_all_invalid_ids(&(1..=20)).collect::<Vec<u64>>(),
-            vec![11]);
+            vec![11]
+        );
     }
 
     #[test]
     fn all_repetitions_examples() {
         let examples = parse_ranges(EXAMPLES).unwrap();
 
-        let invalid_ids: Vec<Vec<u64>> = examples.iter()
+        let invalid_ids: Vec<Vec<u64>> = examples
+            .iter()
             .map(|e| find_all_invalid_ids(e).collect())
             .collect();
 
-        assert_eq!(invalid_ids,
-                   vec![
-                       vec![11, 22],
-                       vec![99, 111],
-                       vec![999, 1010],
-                       vec![1188511885],
-                       vec![222222],
-                       vec![],
-                       vec![446446],
-                       vec![38593859],
-                       vec![565656],
-                       vec![824824824],
-                       vec![2121212121],
-                   ]);
+        assert_eq!(
+            invalid_ids,
+            vec![
+                vec![11, 22],
+                vec![99, 111],
+                vec![999, 1010],
+                vec![1188511885],
+                vec![222222],
+                vec![],
+                vec![446446],
+                vec![38593859],
+                vec![565656],
+                vec![824824824],
+                vec![2121212121],
+            ]
+        );
 
-        assert_eq!(examples.iter()
-                       .map(|r| find_all_invalid_ids(r).sum::<u64>())
-                       .sum::<u64>(), 4174379265);
+        assert_eq!(
+            examples
+                .iter()
+                .map(|r| find_all_invalid_ids(r).sum::<u64>())
+                .sum::<u64>(),
+            4174379265
+        );
     }
 }

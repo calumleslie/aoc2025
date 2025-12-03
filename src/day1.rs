@@ -1,3 +1,4 @@
+use regex::Regex;
 use std::error::Error;
 use std::fs::File;
 use std::io;
@@ -5,7 +6,6 @@ use std::io::BufRead;
 use std::path::Path;
 use std::str::FromStr;
 use std::sync::LazyLock;
-use regex::Regex;
 
 // Maybe this would be better with unsigned arithmetic but I do not trust myself with it
 
@@ -32,7 +32,11 @@ impl Dial {
     }
 
     fn of(direction: i64) -> Dial {
-        assert!(direction >= 0 && direction < 100, "invalid direction: {}", direction);
+        assert!(
+            direction >= 0 && direction < 100,
+            "invalid direction: {}",
+            direction
+        );
         Dial(direction)
     }
 
@@ -53,7 +57,7 @@ impl Dial {
             }
         }
 
-       TurnResult::new(Dial::of(result), clicks)
+        TurnResult::new(Dial::of(result), clicks)
     }
 }
 
@@ -122,7 +126,10 @@ pub fn part2() -> Result<i64, Box<dyn Error>> {
     Ok(count_clicks(Dial::new(), turns))
 }
 
-fn read_turns<P>(filename: P) -> io::Result<Vec<Turn>> where P: AsRef<Path> {
+fn read_turns<P>(filename: P) -> io::Result<Vec<Turn>>
+where
+    P: AsRef<Path>,
+{
     let file = File::open(filename)?;
 
     let mut result: Vec<Turn> = vec![];
@@ -156,7 +163,10 @@ mod tests {
         assert_eq!(Dial::of(50).apply(Turn(-100)), TurnResult::of(50, 1));
         assert_eq!(Dial::of(50).apply(Turn(-50)), TurnResult::of(0, 1));
         assert_eq!(Dial::of(50).apply(Turn(-51)), TurnResult::of(99, 1));
-        assert_eq!(Dial::of(50).apply(Turn(-100_000_000)), TurnResult::of(50, 1_000_000));
+        assert_eq!(
+            Dial::of(50).apply(Turn(-100_000_000)),
+            TurnResult::of(50, 1_000_000)
+        );
         assert_eq!(Dial::of(50).apply(Turn(1000)), TurnResult::of(50, 10));
     }
 
@@ -164,17 +174,21 @@ mod tests {
     fn turn_parse_examples() {
         let turns: Vec<Turn> = EXAMPLES.lines().map(|l| Turn::parse(l.trim())).collect();
 
-        assert_eq!(turns, vec![
-            Turn(-68),
-            Turn(-30),
-            Turn(48),
-            Turn(-5),
-            Turn(60),
-            Turn(-55),
-            Turn(-1),
-            Turn(-99),
-            Turn(14),
-            Turn(-82)]);
+        assert_eq!(
+            turns,
+            vec![
+                Turn(-68),
+                Turn(-30),
+                Turn(48),
+                Turn(-5),
+                Turn(60),
+                Turn(-55),
+                Turn(-1),
+                Turn(-99),
+                Turn(14),
+                Turn(-82)
+            ]
+        );
     }
 
     #[test]
