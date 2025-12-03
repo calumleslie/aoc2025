@@ -1,5 +1,6 @@
 mod day1;
 mod day2;
+mod day3;
 
 use std::env;
 use std::error::Error;
@@ -44,6 +45,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         "day2" => {
             println!("Day 2 part 1: {}", day2::part1()?);
             println!("Day 2 part 2: {}", day2::part2()?);
+            Ok(())
+        },
+        "day3" => {
+            println!("Day 3 part 1: {}", day3::part1()?);
             Ok(())
         }
         cmd => Err(CliError::from_string(format!("Unknown command: {}", cmd)).into())
