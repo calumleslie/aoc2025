@@ -33,7 +33,7 @@ impl Dial {
 
     fn of(direction: i64) -> Dial {
         assert!(
-            direction >= 0 && direction < 100,
+            (0..100).contains(&direction),
             "invalid direction: {}",
             direction
         );

@@ -108,7 +108,7 @@ fn invalid_ids_with_prefix_length(
     (first_repetitions..)
         .flat_map(move |r| invalid_ids_with_prefix_and_repetitions(prefix_length, r))
         .take_while(|id| range.end() >= id)
-        .filter(|id| range.contains(&id))
+        .filter(|id| range.contains(id))
 }
 
 fn invalid_id(prefix: u64, repetitions: u32) -> u64 {
