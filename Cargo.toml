@@ -6,3 +6,4 @@ edition = "2024"
 [dependencies]
 regex = "1.12.2"
 itertools = "0.14.0"
+array2d = "0.3.2"
