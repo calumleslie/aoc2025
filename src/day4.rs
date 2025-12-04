@@ -13,6 +13,15 @@ pub fn part1() -> Result<usize, Box<dyn Error>> {
     Ok(grid.accessible_rolls().len())
 }
 
+pub fn part2() -> Result<usize, Box<dyn Error>> {
+    let mut input = String::new();
+    File::open("inputs/day4.part1.txt")?.read_to_string(&mut input)?;
+
+    let mut grid = Grid::from_str(input.as_str());
+
+    Ok(grid.remove_accessible_repeated())
+}
+
 // These have stupid names so they have the same number of characters and I can line them up
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 enum Entry {
@@ -47,6 +56,32 @@ impl Grid {
         });
 
         Grid(array)
+    }
+
+    fn remove_accessible_repeated(&mut self) -> usize {
+        let mut total_removed: usize = 0;
+
+        loop {
+            let removed = self.remove_accessible_once();
+            total_removed += removed;
+
+            if removed == 0 {
+                return total_removed;
+            }
+        }
+    }
+
+    fn remove_accessible_once(&mut self) -> usize {
+        let mut count: usize = 0;
+        for loc in self.accessible_rolls() {
+            count += 1;
+            self.clear(loc);
+        }
+        count
+    }
+
+    fn clear(&mut self, loc: (usize, usize)) {
+        self.0[loc] = Entry::Empt;
     }
 
     fn accessible_rolls(&self) -> Vec<(usize, usize)> {
@@ -146,5 +181,12 @@ mod tests {
                 (9, 8)
             ]
         );
+    }
+
+    #[test]
+    fn part2_example() {
+        let mut grid = Grid::from_str(EXAMPLE);
+
+        assert_eq!(grid.remove_accessible_repeated(), 43);
     }
 }
