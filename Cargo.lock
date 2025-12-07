@@ -16,6 +16,7 @@ name = "aoc2025"
 version = "0.1.0"
 dependencies = [
  "array2d",
+ "disjoint-sets",
  "itertools",
  "regex",
 ]
@@ -25,6 +26,12 @@ name = "array2d"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d8b39cb2c1bf5a7c0dd097aa95ab859cf87dab5a4328900f5388942dc1889f74"
+
+[[package]]
+name = "disjoint-sets"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4ccbbca7d6a247007ca2535c616d4bb4a5fcad176ef0218671f96b88c52c3d34"
 
 [[package]]
 name = "either"

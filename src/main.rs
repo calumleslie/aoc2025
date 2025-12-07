@@ -63,6 +63,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
         "day5" => {
             println!("Day 5 part 1: {}", day5::part1()?);
+            println!("Day 5 part 2: {}", day5::part2()?);
             Ok(())
         }
         cmd => Err(CliError::from_string(format!("Unknown command: {}", cmd)).into()),
